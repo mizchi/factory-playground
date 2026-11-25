@@ -23,3 +23,18 @@ watch:
 # 保存した納品物を再採点し、期待値と実測値を表示
 audit run:
     @python3 prototypes/expense-task/audit.py {{quote(run)}}
+
+# アルゴリズム実装のお題を新しい作業ディレクトリに配る
+schedule-start:
+    #!/usr/bin/env bash
+    set -eu
+    mkdir -p runs
+    work=$(mktemp -d runs/schedule-work-XXXXXXXX)
+    cp prototypes/schedule-task/task.md "$work/task.md"
+    echo "依頼書: $work/task.md"
+    echo "提出先: $work/solve.py"
+    echo "監査: just schedule $work/solve.py"
+
+# 提出されたアルゴリズムを監査する（省略時は参考解）
+schedule submission="prototypes/schedule-task/solve.py":
+    @python3 -B prototypes/schedule-task/audit.py {{quote(submission)}}

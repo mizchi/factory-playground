@@ -15,6 +15,17 @@ just watch
 | `just watch` / `just task` | 同じ経費精算を実行する。`watch` は実演用に明細ごとに0.8秒待ち、`task` は続けて処理する。tmux の起動と終了は自動。 |
 | `just audit runs/<実行ID>` | 保存した依頼・原票・納品物を再採点し、期待値と実測値を JSON で表示する。実行IDを含むコマンドは実演の最終行からコピーできる。 |
 | `just repro-sessions` / `just repro-factory` | 送達、テストの有効性について、それぞれ3ケースを検査する。`just repro` で全6ケースを実行できる。 |
+| `just schedule-start` / `just schedule <提出ファイル>` | アルゴリズムの実装課題を配り、提出された Python CLI を採点する。引数なしの `just schedule` では参考解の採点を実演できる。 |
+
+## アルゴリズムを実装するお題
+
+「開始・終了時刻と報酬が付いた依頼から、時間が重ならず報酬が最大になる組み合わせを返す CLI」を作る。午前と午後の依頼を各5円で受ければ計10円になり、1日を占める9円の依頼を上回る。提出するのは任意の入力を解く `solve.py`。同額の最適解はどれを返してもよい。[入出力仕様と具体例](prototypes/schedule-task/task.md)
+
+1. `just schedule-start` を実行する。表示された作業ディレクトリの `task.md` を読み、人またはコーディングエージェントが隣に `solve.py` を実装する。
+2. 表示された `just schedule runs/schedule-work-…/solve.py` を実行する。監査役は各問で新しく CLI を起動し、選択した ID の存在・重複・時間帯・報酬合計・最適性を確認する。小さな17問は全組み合わせを列挙して採点する。3,000件の問題は独立した1,000ブロックから構成し、既知の最適値10,000を使う。[採点](prototypes/schedule-task/audit.py)・[問題と期待値](prototypes/schedule-task/cases.py)
+3. `runs/schedule-audit-…/` に提出時点のソース、依頼書、実行した各問の入力・期待値・結果を保存する。不合格時は最初の反例で止まり終了コード1。表示されたコマンドで同じ提出物を再採点できる。
+
+参考解は終了時刻順に依頼を並べ、二分探索で直前に選べる範囲を決め、動的計画法で最適報酬と採用 ID を復元する。計算量は時間 O(n log n)、空間 O(n)。[参考解](prototypes/schedule-task/solve.py)
 
 ## 1件の依頼が完了するまで
 
