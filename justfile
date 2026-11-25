@@ -70,3 +70,23 @@ factory-pipeline plan="prototypes/schedule-task/pipeline.json" heartbeat_seconds
 # 実行中の親工程から子孫への継続指示を更新する
 factory-broadcast run parent message:
     @node prototypes/schedule-task/pipeline.ts {{quote(run)}} {{quote(parent)}} {{quote(message)}}
+
+# 一言の依頼からTRPGを生成し、GMと2〜3人のPCで試遊・改稿
+trpg wish="" table="" minutes="" context="":
+    @node templates/trpg/run.mts {{quote(wish)}} {{quote(table)}} {{quote(minutes)}} {{quote(context)}}
+
+# 同じシナリオと配役で揺らぎカードを替えて試遊
+trpg-replay draft seed="0":
+    @node templates/trpg/run.mts --replay {{quote(draft)}} {{quote(seed)}}
+
+# 指定した場面のGM裁定直前から新しい卓へ分岐
+trpg-resume draft scene context="":
+    @node templates/trpg/run.mts --resume {{quote(draft)}} {{quote(scene)}} {{quote(context)}}
+
+# 保存した公開ログを同じ状態のまま整合性監査
+trpg-audit draft:
+    @node templates/trpg/run.mts --audit {{quote(draft)}}
+
+# 汎用テンプレート。設定に従い生成・機械検査・独立レビュー・改稿
+factory-template spec="templates/factory/factory.json" task="":
+    @node templates/factory/run.mts {{quote(spec)}} {{quote(task)}}

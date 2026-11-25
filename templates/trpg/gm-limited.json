@@ -1,0 +1,9 @@
+{
+  "metadata": { "variant": "gm-without-planned-ending", "audience": "初見の二人卓" },
+  "gm": {
+    "sections": ["secret", "clues", "npc"],
+    "history": "all",
+    "metadataKeys": ["audience"],
+    "notes": "PC同士が実際に交わした提案を手がかりに裁定する。意見が割れたときは、各案で何が残ったかを描写する。"
+  }
+}
