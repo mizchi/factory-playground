@@ -1,0 +1,6 @@
+Sales  train      +1,200 円   部署小計 1,200 円
+Ops    stationery   +900 円   部署小計 900 円
+Sales  refund       -200 円   部署小計 1,000 円
+Design printing     +700 円   部署小計 700 円
+Design refund       -700 円   部署小計 0 円
+Ops    postage      +350 円   部署小計 1,250 円

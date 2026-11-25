@@ -1,0 +1,7 @@
+department,description,yen
+Sales,train,1200
+Ops,stationery,900
+Sales,refund,-200
+Design,printing,700
+Design,refund,-700
+Ops,postage,350

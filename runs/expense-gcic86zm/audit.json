@@ -1,0 +1,68 @@
+{
+  "task": "経費精算 v1",
+  "run": "expense-gcic86zm",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "file": "task.md",
+      "expected_sha256": "9df6e36b8ac37c0682cad40b2868228676b79f2233e9add816e0b510f29e63c5",
+      "actual_sha256": "9df6e36b8ac37c0682cad40b2868228676b79f2233e9add816e0b510f29e63c5",
+      "passed": true
+    },
+    {
+      "file": "expenses.csv",
+      "expected_sha256": "1c0b23d240ccb5a1ebe4a76887652db6ace8190469333feaa77986cada507344",
+      "actual_sha256": "1c0b23d240ccb5a1ebe4a76887652db6ace8190469333feaa77986cada507344",
+      "passed": true
+    },
+    {
+      "file": "report.csv",
+      "expected": [
+        [
+          "department",
+          "total_yen"
+        ],
+        [
+          "Design",
+          "0"
+        ],
+        [
+          "Ops",
+          "1250"
+        ],
+        [
+          "Sales",
+          "1000"
+        ],
+        [
+          "TOTAL",
+          "2250"
+        ]
+      ],
+      "actual": [
+        [
+          "department",
+          "total_yen"
+        ],
+        [
+          "Design",
+          "0"
+        ],
+        [
+          "Ops",
+          "1250"
+        ],
+        [
+          "Sales",
+          "1000"
+        ],
+        [
+          "TOTAL",
+          "2250"
+        ]
+      ],
+      "passed": true,
+      "sha256": "a6e1a9f50d303ac0cb6a5582e9a571e4e926e854724546951abf498477e70605"
+    }
+  ]
+}
