@@ -70,6 +70,17 @@ export function announce(run: string, author: string, message: string) {
 
 export function openPipeline(root: Member, run: string) {
   const ordered = stages(root);
+  // Each job consumes the handoffs between it and the preceding job in tree order.
+  const assignments = new Map<Job, { stage: Stage; handoffs: Stage[] }>();
+  let handoffs: Stage[] = [];
+  for (const stage of ordered) {
+    if (stage.member.job) {
+      assignments.set(stage.member.job, { stage, handoffs });
+      handoffs = [];
+    } else {
+      handoffs.push(stage);
+    }
+  }
   const path = join(run, "team-board.json");
   const board: Board = existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : { entries: [] };
   function publish(entry: Entry) {
@@ -100,12 +111,9 @@ export function openPipeline(root: Member, run: string) {
       announcements: announcements.map(e => e.id), inputBytes: Buffer.byteLength(message) });
     return message;
   }
-  function stageFor(job: Job) { return ordered.find(s => s.role === job)!; }
+  function stageFor(job: Job) { return assignments.get(job)!.stage; }
   async function prepare(job: Job, contract: string, round: number, record: (detail: object) => void, working: (phase: string) => void) {
-    const end = ordered.indexOf(stageFor(job));
-    let start = end;
-    while (start > 0 && !ordered[start - 1].member.job) start--;
-    for (const stage of ordered.slice(start, end)) {
+    for (const stage of assignments.get(job)!.handoffs) {
       if (board.entries.some(e => e.author === stage.member.id && e.role === stage.role)) continue;
       working(`引き継ぎ: ${stage.member.id}`);
       const lead = stage.role === "lead";
@@ -117,7 +125,6 @@ export function openPipeline(root: Member, run: string) {
   }
   return { prepare, stageFor, root: ordered[0], input, publish };
 }
-
 
 if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
   try {

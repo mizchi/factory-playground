@@ -17,7 +17,7 @@ just factory
 
 既定の上限は3稿。`just factory 3 path/to/solve.ts` は手元の候補を初稿として検査する。終了コードは納品が0（`DELIVERED`）、上限到達が1（`EXHAUSTED`）、モデル呼び出し等の実行エラーが2（`ERROR`）。上限に達したときは、最終稿と未解決の指摘を残して終了する。
 
-開始時に表示する `runs/schedule-factory-…/` に依頼書と `result.json` を保存する。各 `round-N/` の `solve.ts` がその回の候補、`types.json` と `audit.json` が検査結果、`review-*.json` がレビューの根拠、`feedback.json` が次稿に渡す指摘。各結果に候補の SHA-256 が入る。納品後は `just schedule runs/schedule-factory-…/solve.ts` で独立監査を再実行できる。[制御ループ](prototypes/schedule-task/factory.ts)・[モデル呼び出し](prototypes/schedule-task/model.ts)
+開始時に表示する `runs/schedule-factory-…/` に依頼書と `result.json` を保存する。各 `round-N/` の `solve.ts` がその回の候補、`types.json` と `audit.json` が検査結果、`review-*.json` がレビューの根拠、`feedback.json` が次稿に渡す指摘。各結果に候補の SHA-256 が入る。納品後は `just schedule runs/schedule-factory-…/solve.ts` で独立監査を再実行できる。[制御ループ](prototypes/schedule-task/factory-run.ts)・[モデル呼び出し](prototypes/schedule-task/model.ts)
 
 ### 異なるモデルを親子のパイプラインで動かす
 
