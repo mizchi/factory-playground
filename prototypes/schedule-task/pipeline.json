@@ -1,0 +1,12 @@
+{
+  "id": "supervisor", "agent": "codex", "model": "gpt-6.2-sol", "task": "依頼を配分し、検査と両レビューをもとに納品を判断する。仕様で決めた範囲を保つ。",
+  "children": [
+    { "id": "design", "agent": "pi", "model": "openai-codex/gpt-5.6-sol", "task": "実装前に入出力と計算方法を確認し、設計担当と実装担当に共通の条件を渡す。", "children": [
+      { "id": "algorithm", "agent": "codex", "model": "gpt-6.2-sol", "task": "最適値と受注 ID を復元する不変条件を提示する。" },
+      { "id": "builder", "agent": "pi", "model": "openai-codex/gpt-5.6-sol", "job": "implement", "task": "実装と検証者への短い引き継ぎを書く。" }
+    ] },
+    { "id": "boundaries", "agent": "pi", "model": "openai-codex/gpt-5.6-sol", "task": "反例になりそうな小さい境界ケースを挙げる。" },
+    { "id": "correctness", "agent": "pi", "model": "openai-codex/gpt-5.6-sol", "job": "review-correctness", "task": "境界例と復元を検証する。" },
+    { "id": "quality", "agent": "pi", "model": "openai-codex/gpt-5.6-sol", "job": "review-implementation", "task": "仕様内の入力に対する実装品質を点検する。検査時間は監査記録を参照する。" }
+  ]
+}

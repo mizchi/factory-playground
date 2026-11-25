@@ -32,9 +32,41 @@ schedule-start:
     work=$(mktemp -d runs/schedule-work-XXXXXXXX)
     cp prototypes/schedule-task/task.md "$work/task.md"
     echo "依頼書: $work/task.md"
-    echo "提出先: $work/solve.py"
-    echo "監査: just schedule $work/solve.py"
+    echo "提出先: $work/solve.ts"
+    echo "実況: just schedule-watch $work/solve.ts"
+    echo "監査: just schedule $work/solve.ts"
 
 # 提出されたアルゴリズムを監査する（省略時は参考解）
-schedule submission="prototypes/schedule-task/solve.py":
-    @python3 -B prototypes/schedule-task/audit.py {{quote(submission)}}
+schedule submission="prototypes/schedule-task/solve.ts":
+    @node prototypes/schedule-task/audit.ts {{quote(submission)}}
+
+# 提出を監視する（Rex では実行元の右ペインに表示）
+[positional-arguments]
+schedule-watch submission="prototypes/schedule-task/solve.ts":
+    #!/usr/bin/env bash
+    set -eu
+    mode=--watch
+    if [[ -n "${REX_SESSION:-}" ]] && command -v rex >/dev/null; then
+        mode=--rex-watch
+    fi
+    exec node prototypes/schedule-task/audit.ts "$mode" "$1"
+
+# 仕様から実装・監査・セルフレビュー・修正を繰り返して納品する
+factory rounds="3" seed="" agent="codex":
+    @node prototypes/schedule-task/factory.ts {{quote(rounds)}} {{quote(seed)}} {{quote(agent)}}
+
+# 指定モデルを監督にして、終了条件を満たすまで heartbeat で再開する
+factory-supervise model="" heartbeat_seconds="30" seed="" agent="codex":
+    @node prototypes/schedule-task/supervise.ts --supervise {{quote(model)}} {{quote(heartbeat_seconds)}} {{quote(seed)}} {{quote(agent)}}
+
+# 保存済みの監督を同じ実行ディレクトリで再開する
+factory-resume run:
+    @node prototypes/schedule-task/supervise.ts --resume {{quote(run)}}
+
+# 親子の工程表に沿って、メモと一斉指示を渡しながら監督付きで実行
+factory-pipeline plan="prototypes/schedule-task/pipeline.json" heartbeat_seconds="30" seed="":
+    @node prototypes/schedule-task/supervise.ts --pipeline {{quote(plan)}} {{quote(heartbeat_seconds)}} {{quote(seed)}}
+
+# 実行中の親工程から子孫への継続指示を更新する
+factory-broadcast run parent message:
+    @node prototypes/schedule-task/pipeline.ts {{quote(run)}} {{quote(parent)}} {{quote(message)}}

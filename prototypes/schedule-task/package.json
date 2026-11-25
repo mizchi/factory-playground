@@ -1,0 +1,8 @@
+{
+  "name": "factory-schedule-task",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": { "typecheck": "tsc --noEmit", "test": "node --test *.test.ts" },
+  "devDependencies": { "@types/node": "^24.0.0", "typescript": "~5.9.3" }
+}
