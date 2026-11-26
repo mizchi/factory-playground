@@ -45,7 +45,7 @@ export function gmView(scenario: Record<string,string>, log: Entry[], turn: numb
   return { scenario:visible, events:log.slice(Math.max(0,start)), notes:context.gm.notes, metadata:Object.fromEntries(context.gm.metadataKeys.map(k => [k,context.metadata[k]])) };
 }
 
-export type Checkpoint = { version:1; turn:number; publicLog:Entry[]; predictions:string[][] };
+export type Checkpoint = { version:1; turn:number; publicLog:Entry[]; predictions:(string|null)[][] };
 export function saveCheckpoint(dir:string, point:Checkpoint) {
   const path = join(dir,`before-gm-${point.turn}.json`);
   writeFileSync(path+".tmp",JSON.stringify(point,null,2)+"\n",{mode:0o600});
@@ -62,7 +62,7 @@ export function loadBranch(draft:string, turn:number, seats:number, scenes:numbe
     const log: Entry[] = read(join(draft,"session.json"));
     const boundary = log.findIndex(e => e.id === `S${turn}`);
     if (boundary < 0) throw new Error("そのGM裁定のチェックポイントも完了ログもありません");
-    const predictions: string[][] = read(join(draft,"predictions.json"));
+    const predictions: (string|null)[][] = read(join(draft,"predictions.json"));
     point = {version:1,turn,publicLog:log.slice(0,boundary),predictions:predictions.map(p => p.slice(0,turn))};
   }
   const log = point?.publicLog;
@@ -75,7 +75,7 @@ export function loadBranch(draft:string, turn:number, seats:number, scenes:numbe
       }) || !log.some(e => e.id === `S${turn-1}`) ||
       new Set(log.map(e => e.id)).size !== log.length || log.some(e => e.id === `S${turn}`) ||
       !Array.isArray(point.predictions) || point.predictions.length !== seats ||
-      !point.predictions.every((p,i) => Array.isArray(p) && p.length === turn && p.every(s => typeof s === "string") &&
+      !point.predictions.every((p,i) => Array.isArray(p) && p.length === turn && p.every((s,index) => typeof s === "string" || (s === null && log.some(e => e.id === `A${index+1}.${i+1}` && e.controller === "human"))) &&
         log.some(e => e.id === `A${turn}.${i+1}`))) throw new Error("チェックポイントのログまたはPCの状態が不正です");
   const profile = join(dirname(draft),"context.json");
   return { point, context:existsSync(profile) ? contextWith(defaultContext,read(profile)) : defaultContext,

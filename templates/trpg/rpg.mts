@@ -57,21 +57,23 @@ export function initial(r:Rules,seats:number):State {
 }
 
 export function choices(r:Rules,state:State,seat:number):Move[] {
-  const moves:Move[]=[{code:"stay",label:"その場で行動する（交渉・装置の操作・援護など）。障害突破と移動は保留"}];
+  const moves:Move[]=[{code:"stay",label:"ここで行動する（移動・突破なし）"}];
   let destination:number|undefined;
   if (r.rooms && state.positions) {
     const here=state.positions[seat], last=r.rooms.length-1;
     for (const to of [here-1,here+1]) if (r.rooms[to])
       moves.push({code:`walk-${to+1}`,label:`順路を一歩進み「${r.rooms[to]}」へ移動`,to});
-    if (here!==0 && here!==last) return moves;
-    destination=here===0 ? last : 0;
+    if (here===0 || here===last) destination=here===0 ? last : 0;
     // With only a map enabled, the obstacle blocks the shortcut. The detour costs turns.
   }
   const target = destination === undefined ? r.obstacle+"を突破" : `近道で「${r.rooms![destination]}」へ移動`;
-  if (r.hp && state.hp && state.hp[seat]>=r.hp.damage)
+  const canCross = !r.rooms || destination !== undefined;
+  if (canCross && r.hp && state.hp && state.hp[seat]>=r.hp.damage)
     moves.push({code:"risk",label:`${target}（HP−${r.hp.damage}）`,damage:r.hp.damage,to:destination});
-  if (r.item && (state.stock ?? 0)>0)
-    moves.push({code:"use",label:`${target}（共有の${r.item.name}を1回使用）`,uses:1,to:destination});
+  if (r.item && (state.stock ?? 0)>0) {
+    if (canCross) moves.push({code:"use",label:`${target}（共有の${r.item.name}を1回使用）`,uses:1,to:destination});
+    moves.push({code:"use-here",label:`ここで${r.item.name}を使う（残り${state.stock}回から1回消費）`,uses:1});
+  }
   return moves;
 }
 
@@ -88,7 +90,7 @@ export function resolveMove(r:Rules,state:State,seat:number,code:string) {
 export function ruleSheet(r:Rules) {
   return [`障害　${r.obstacle}`,
     r.hp && `各PCのHP ${r.hp.max}。突破の代償 ${r.hp.damage}。0で「${r.hp.wound}」。負傷後も交渉・援護は可能。`,
-    r.item && `共有品「${r.item.name}」は${r.item.uses}回分。1回で障害を突破。`,
+    r.item && `共有品「${r.item.name}」は${r.item.uses}回分。1回で障害を突破するか、現在地で本来の用途に使う。`,
     r.rooms && `地図　${r.rooms.join(" ⇄ ")}。各PCは入口から1手番1区間。入口と目的地の近道は障害を突破したときに通れる。`]
     .filter(Boolean).join("\n");
 }

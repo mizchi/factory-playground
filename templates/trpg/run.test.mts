@@ -51,7 +51,7 @@ test("three PCs see only public play, choose after the twist, and revise on grou
     if(role==="survey") assert.doesNotMatch(prompt,/秘密の正解/);
     if(role==="judge"){
       assert.doesNotMatch(prompt,/秘密の正解/);
-      return {...r,emergence:"OBSERVED",proposal:"A1.1",response:"A1.2",consequence:"S1",status:drafts===1?"REVISE":"READY",evidenceId:"S2",quote:"朝が来た",change:"選択を残す"};
+      return {...r,clarity:"PASS|D1|選択を提示",feasibility:"PASS|S1|帰結を提示",resolutionQuality:"PASS|S2|選択を反映",emergence:"OBSERVED",proposal:"A1.1",response:"A1.2",consequence:"S1",status:drafts===1?"REVISE":"READY",evidenceId:"S2",quote:"朝が来た",change:"選択を残す"};
     }
     return r;
   });
@@ -65,7 +65,7 @@ test("three PCs see only public play, choose after the twist, and revise on grou
     assert.notEqual(role,"author");
     if(role==="gm") assert.doesNotMatch(prompt,/時計が止まる/);
     const r=Object.fromEntries(keys.map(k=>[k,"記録"]));
-    return {...r,choice:"OK",status:"READY",evidenceId:"S2",quote:"ログにない引用"};
+    return {...r,choice:"OK",clarity:"PASS|S0|目的を提示",feasibility:"PASS|S1|帰結を提示",resolutionQuality:"PASS|S2|選択を反映",status:"READY",evidenceId:"S2",quote:"ログにない引用"};
   },saved);
   assert.equal(second.status,"CHECK_ASSESSMENT");
 });
@@ -82,16 +82,18 @@ test("a 60-minute playtest records four distinct beats and a cited GM contradict
   const run = mkdtempSync(join(tmpdir(),"trpg-60-"));
   t.after(() => rmSync(run,{recursive:true,force:true}));
   const table = readTable(join(import.meta.dirname,"table.json"));
-  const result = await playtest({...table, minutes:60, maxRevisions:0},run,async (role,prompt,keys) => {
+  const result = await playtest({...table, minutes:60, maxRevisions:0, designSources:[]},run,async (role,prompt,keys) => {
     const fields = Object.fromEntries(keys.map(k => [k,k]));
+    assert.notEqual(role,"director");
     if (role === "author") assert.match(prompt,/別の現場/);
     if (role === "gm" && prompt.includes("今回が最終場面")) return { ...fields, narration:"鐘は二つ" };
-    if (role === "judge") return {...fields, status:"READY", evidenceId:"S4", quote:"鐘は二つ", emergence:"OBSERVED",
+    if (role === "judge") return {...fields, clarity:"PASS|S0|目的を提示",feasibility:"PASS|S1|帰結を提示",resolutionQuality:"PASS|S2|選択を反映",status:"READY", evidenceId:"S4", quote:"鐘は二つ", emergence:"OBSERVED",
       proposal:"A1.1", response:"A1.2", consequence:"S1"};
     return fields;
   },undefined, async state => ({ model:"test", choice:JSON.parse(state).current.id === "S4" ? "CANON" : "OK" }));
   assert.equal(result.status,"NEEDS_EDIT");
   const notes = readFileSync(join(run,"draft-1/scenario.md"),"utf8");
+  assert.doesNotMatch(notes,/GMの進行ガイドライン/);
   assert.match(notes,/60分卓/);
   assert.match(notes,/beat4/);
   const audit = JSON.parse(readFileSync(join(run,"draft-1/continuity.json"),"utf8"));
@@ -109,7 +111,7 @@ test("an old draft receives private handouts without rewriting its scenario; unk
     assert.notEqual(role,"author");
     if (role === "supplement") supplements++;
     const fields = Object.fromEntries(keys.map(k => [k,k]));
-    return {...fields, status:"READY", evidenceId:"S0", quote:scenario.opening, emergence:"OBSERVED",
+    return {...fields, clarity:"PASS|S0|目的を提示",feasibility:"PASS|S1|帰結を提示",resolutionQuality:"PASS|S2|選択を反映",status:"READY", evidenceId:"S0", quote:scenario.opening, emergence:"OBSERVED",
       proposal:"A1.1", response:"A1.2", consequence:"S1"};
   },scenario,async () => ({model:"test",choice:"UNKNOWN"}));
   assert.equal(supplements,1);
@@ -117,4 +119,43 @@ test("an old draft receives private handouts without rewriting its scenario; unk
   const saved = JSON.parse(readFileSync(join(run,"draft-1/scenario.json"),"utf8"));
   assert.equal(saved.secret,scenario.secret);
   assert.equal(saved.win2,"win2");
+});
+
+test("one author call creates the complete first draft; a rubric failure alone triggers a fresh playtest",async t=>{
+  const run=mkdtempSync(join(tmpdir(),"trpg-fresh-"));
+  t.after(()=>rmSync(run,{recursive:true,force:true}));
+  const defaults={...readTable(join(import.meta.dirname,"table.json")),designSources:[]};
+  const wish="氷原の料理対決";
+  const authors:string[]=[];
+  let reviews=0;
+  const result=await playtest(defaults,run,async(role,prompt,keys)=>{
+    const fields=Object.fromEntries(keys.map(k=>[k,k]));
+    assert.notEqual(role,"brief");
+    if(role==="author"){
+      authors.push(prompt);
+      assert.match(prompt,/氷原の料理対決/);
+      assert.doesNotMatch(prompt,/映画館|エンドロール|映写係/);
+      if(authors.length===2){
+        assert.match(prompt,/皿の所有者が譲った理由を置く/);
+        assert.match(prompt,/氷皿を分けた/);
+        assert.doesNotMatch(prompt,/別のお題/);
+      }
+      return {...fields,title:"氷皿",name1:"職人",name2:"味見役",twist:"氷が薄くなる"};
+    }
+    if(role==="gm")return {...fields,narration:"氷皿を分けた"};
+    if(role==="judge"){
+      reviews++;
+      return {...fields,status:"READY",change:"NONE",clarity:"PASS|D1|代償を提示",feasibility:"PASS|D1|どちらも実行可能",
+        resolutionQuality:reviews===1?"FAIL|S2|皿の所有者が譲った理由を置く":"PASS|S2|譲歩の条件が満たされた",
+        emergence:"OBSERVED",proposal:"A1.1",response:"A1.2",consequence:"S1",evidenceId:"S2",quote:"氷皿"};
+    }
+    return {...fields,choice:"OK"};
+  },undefined,undefined,undefined,undefined,undefined,wish);
+  assert.equal(result.status,"READY_FOR_HUMAN");
+  assert.equal(authors.length,2);
+  const read=(f:string)=>JSON.parse(readFileSync(join(run,f),"utf8"));
+  assert.deepEqual(read("table.json").complications,["氷が薄くなる"]);
+  assert.equal(read("quality.json").mode,"fresh");
+  assert.deepEqual(read("quality.json").history.map((h:{status:string})=>h.status),["NEEDS_EDIT","READY_FOR_HUMAN"]);
+  assert.equal(read("draft-2/session.json")[0].id,"S0");
 });

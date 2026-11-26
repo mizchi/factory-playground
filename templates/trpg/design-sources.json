@@ -1,0 +1,30 @@
+[
+  {
+    "id": "situations",
+    "author": "Justin Alexander",
+    "title": "Don’t Prep Plots",
+    "url": "https://thealexandrian.net/wordpress/4147/roleplaying-games/dont-prep-plots",
+    "principle": "状況と登場人物の目的を用意し、何が起きるかはPCがそこで取った行動から決める。"
+  },
+  {
+    "id": "clues",
+    "author": "Justin Alexander",
+    "title": "Three Clue Rule",
+    "url": "https://thealexandrian.net/wordpress/1118/roleplaying-games/three-clue-rule",
+    "principle": "推理が進行に不可欠なとき、その結論に気づける手がかりを少なくとも三つ用意し、一つの見落としで卓が止まるのを防ぐ。"
+  },
+  {
+    "id": "judgment",
+    "author": "John Harper",
+    "title": "Blades in the Dark — The Core System",
+    "url": "https://bladesinthedark.com/core-system",
+    "principle": "問題にどう働きかけるかはプレイヤーが選ぶ。その方法が今の状況でどう効くか、どんな危険や結果を伴うかをGMが裁定する。"
+  },
+  {
+    "id": "mda",
+    "author": "Robin Hunicke, Marc LeBlanc, Robert Zubek",
+    "title": "MDA: A Formal Approach to Game Design and Game Research",
+    "url": "https://users.cs.northwestern.edu/~hunicke/MDA.pdf",
+    "principle": "ルール、そこからプレイ中に生じる振る舞い、プレイヤーが味わう体験を区別し、望む体験と実際の振る舞いのつながりを確かめる。"
+  }
+]

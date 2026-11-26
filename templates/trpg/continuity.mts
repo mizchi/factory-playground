@@ -1,4 +1,4 @@
-import type { Call, Entry } from "./session.mts";
+import { transcript, type Call, type Entry } from "./session.mts";
 
 type Choice = { choice: string; model: string; confidence?: number; probabilities?: Record<string, number> };
 export type Decide = (state: string, criteria: Record<string,string>) => Promise<Choice>;
@@ -33,7 +33,7 @@ export async function checkContinuity(secret: string, log: Entry[], decide: Deci
   const facts: Entry[] = [{id:"CANON",text:secret}];
   const history: Entry[] = [];
   const checks = [];
-  for (const current of log) {
+  for (const current of transcript(log)) {
     if (/^[SD]\d+$/.test(current.id)) {
       const criteria: Record<string,string> = Object.fromEntries(facts.map(f => [f.id,
         f.id === "CANON" ? "シナリオの真相と矛盾" : `公開ログの ${f.id} と矛盾`]));

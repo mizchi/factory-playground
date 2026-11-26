@@ -62,3 +62,33 @@ test("resume restores HP, route and depleted shared item from logged actions, re
   assert.deepEqual(output.state,{hp:[0,0],stock:0,positions:[0,2]});
   assert.deepEqual(read(join(child,"draft-1"),"mechanics.json"),output);
 });
+
+test("a PC can spend the last charge without moving, including inside the dungeon",()=>{
+  const rules=rulesFrom({...params,item:"録音筒"},["items","dungeon"],2)!;
+  const state=initial(rules,2);
+  resolveMove(rules,state,0,"walk-2");
+  assert.match(resolveMove(rules,state,0,"use-here"),/録音筒/);
+  assert.deepEqual(state,{positions:[1,0],stock:0});
+  assert.throws(()=>resolveMove(rules,state,1,"use"));
+  assert.throws(()=>resolveMove(rules,state,0,"use-here"));
+});
+
+test("a READY review with a cited item discrepancy still requires an edit",async t=>{
+  const run=mkdtempSync(join(tmpdir(),"rpg-quality-"));
+  t.after(()=>rmSync(run,{recursive:true,force:true}));
+  const table={...readTable(join(import.meta.dirname,"table-dungeon.json")),maxRevisions:0};
+  const call:Call=async(role,prompt,keys)=>{
+    const fields=Object.fromEntries(keys.map(k=>[k,k]));
+    if(role==="author")return {...fields,...params};
+    if(role==="player")return {...fields,move:"stay"};
+    if(role==="gm")return {...fields,narration:"浮き袋を一つ使った。"};
+    if(role==="judge"){
+      assert.match(prompt,/use-here/);
+      return {...fields,clarity:"PASS|S0|目的を提示",feasibility:"PASS|S1|帰結を提示",resolutionQuality:"PASS|S2|選択を反映",status:"READY",emergence:"OBSERVED",proposal:"A1.1",response:"A1.2",consequence:"S2",evidenceId:"S2",quote:"浮き袋",stockConflict:"S2"};
+    }
+    return {...fields,choice:"OK"};
+  };
+  const result=await playtest(table,run,call);
+  assert.equal(result.status,"NEEDS_EDIT");
+  assert.equal(JSON.parse(readFileSync(join(run,"draft-1/mechanics.json"),"utf8")).state.stock,1);
+});

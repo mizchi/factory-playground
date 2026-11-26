@@ -1,5 +1,10 @@
 export type Call = (role: string, prompt: string, keys: readonly string[]) => Promise<Record<string, string>>;
-export type Entry = { id: string; text: string; move?: string };
+export type Entry = { id: string; text: string; brief?:string; move?: string; controller?: "human" };
+// Short descriptions belong to the player's display; adjudication uses the original words.
+export function transcript(events: Entry[]) {
+  return events.map(({brief: _brief, ...entry}) => entry);
+}
+
 export type Minutes = 30 | 60;
 
 export function duration(value: unknown): Minutes {

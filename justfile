@@ -71,9 +71,21 @@ factory-pipeline plan="prototypes/schedule-task/pipeline.json" heartbeat_seconds
 factory-broadcast run parent message:
     @node prototypes/schedule-task/pipeline.ts {{quote(run)}} {{quote(parent)}} {{quote(message)}}
 
-# 一言の依頼からTRPGを生成し、GMと2〜3人のPCで試遊・改稿
+# 質問への回答または一言のお題からTRPGを生成し、自動で試遊・改稿
 trpg wish="" table="" minutes="" context="":
     @node templates/trpg/run.mts {{quote(wish)}} {{quote(table)}} {{quote(minutes)}} {{quote(context)}}
+
+# 保存済みの月面図書館の卓を投影する（opening / choice / ending）
+trpg-demo scene="opening":
+    @node templates/trpg/demo.mts {{quote(scene)}}
+
+# 一言から新規生成し、自動レビューまで完了した卓の初稿と最終稿を比較
+trpg-quality root="runs":
+    @node templates/trpg/report.mts {{quote(root)}}
+
+# 人間がPCを1席担当するTUI試遊
+trpg-play seat="1" wish="" table="" minutes="":
+    @TRPG_HUMAN_SEAT={{quote(seat)}} node templates/trpg/run.mts {{quote(wish)}} {{quote(table)}} {{quote(minutes)}}
 
 # 同じシナリオと配役で揺らぎカードを替えて試遊
 trpg-replay draft seed="0":
