@@ -26,7 +26,8 @@ function status(v:SeatView) {
     v.rules?.item ? `${v.rules.item.name} 残り${v.state?.stock}回` : ""].filter(Boolean).join("　");
 }
 
-export function terminalSeat(seat:number, input: Readable | TerminalInput = process.stdin, output:Writable=process.stdout): HumanSeat & {close():void} {
+export function terminalSeat(seat:number, input: Readable | TerminalInput = process.stdin, output:Writable=process.stdout,
+    viewMode: "player" | "audience" = "player"): HumanSeat & {close():void} {
   const reader = "readLine" in input ? input : terminalInput(input, output);
   const print=(s:string)=>{output.write(s+"\n")};
   let lastDraft=0, seen=0;
@@ -40,7 +41,7 @@ export function terminalSeat(seat:number, input: Readable | TerminalInput = proc
       print("\n"+cue);
       const answer=await reader.readLine(label+" > ");
       if (answer==="/log") print(v.events.map(e=>`[${e.id}] ${e.text}`).join("\n"));
-      else if (answer==="/hand") print(hand(v));
+      else if (answer==="/hand") print(viewMode === "audience" ? "この画面は会場用です。手札は伏せて遊びます。" : hand(v));
       else if (answer==="/rules") print(v.rules ? ruleSheet(v.rules) : "この卓に追加のルールはありません。");
       else if (answer) return answer;
       else print("一行入力してください。");
@@ -51,10 +52,11 @@ export function terminalSeat(seat:number, input: Readable | TerminalInput = proc
     if (lastDraft!==v.draft) {
       lastDraft=v.draft;
       seen=0;
-      print(`\n${v.title}　あなたは${v.handout.name}です。\n${hand(v)}`);
-      print("/log 全文　/hand 手札　/rules ルール　/quit 中断");
+      print(`\n${v.title}　あなたは${v.handout.name}です。`);
+      if (viewMode === "player") print(hand(v));
+      print(viewMode === "player" ? "/log 全文　/hand 手札　/rules ルール　/quit 中断" : "/log 全文　/rules ルール　/quit 中断");
     }
-    for (const e of v.events.slice(seen)) print(describe(e));
+    for (const e of v.events.slice(seen)) print(viewMode === "audience" && e.id === "S0" ? e.text : describe(e));
     seen=v.events.length;
   }
 
@@ -98,7 +100,8 @@ export function terminalSeat(seat:number, input: Readable | TerminalInput = proc
         surprise:await ask(v,outcome,"意外だったことは？"),
         fairness:await ask(v,outcome,"この結末に納得しましたか？"),
         agency:await ask(v,action ? "あなたの最後の行動　"+describe(action) : outcome,"どの選択が効きましたか？"),
-        victory:await ask(v,"あなたの目標　"+short(v.handout.win),"勝利条件を達成しましたか？")};
+        victory:viewMode === "audience" ? "会場では個別の勝利条件を伏せたため未評価。" :
+          await ask(v,"あなたの目標　"+short(v.handout.win),"勝利条件を達成しましたか？")};
     }
   };
 }

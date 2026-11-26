@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { agentName, askTextFields, type Agent } from "../factory/agent.mts";
 
@@ -283,6 +283,7 @@ if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
 }
 
 async function runTable(wish?: string, file = "", durationOrSeed?: string, contextFile?: string) {
+  const liveDemo = wish === "--live-demo";
   const resuming = wish === "--resume";
   const replaying = resuming || wish === "--replay";
   if (replaying && !file) throw new Error("再試遊する draft ディレクトリを指定してください");
@@ -308,7 +309,7 @@ async function runTable(wish?: string, file = "", durationOrSeed?: string, conte
   const runs = resolve("runs");
   mkdirSync(runs, { recursive: true });
   const run = mkdtempSync(join(runs, "trpg-"));
-  console.log(`卓の記録: ${run}`);
+  console.log(`卓の記録: ${liveDemo ? relative(process.cwd(), run) : run}`);
   const modelPath = join(dirname(file),"models.json");
   const prior = resuming && existsSync(modelPath) ? JSON.parse(readFileSync(modelPath,"utf8")) : {};
   const agent = agentName(process.env.TRPG_AGENT ?? prior.agent);
@@ -318,20 +319,21 @@ async function runTable(wish?: string, file = "", durationOrSeed?: string, conte
   let input: TerminalInput | undefined;
   let human: ReturnType<typeof terminalSeat> | undefined;
   try {
-    const humanSetting = process.env.TRPG_HUMAN_SEAT;
+    const humanSetting = liveDemo ? "1" : process.env.TRPG_HUMAN_SEAT;
     const selectedSeat = humanSetting === undefined ? undefined : seatNumber(humanSetting, file ? table.players.length : 2);
-    const guided = wish === "--interview" || (process.stdin.isTTY && !wish?.trim() && !file);
+    const guided = liveDemo || wish === "--interview" || (process.stdin.isTTY && !wish?.trim() && !file);
     if (guided || selectedSeat) input = terminalInput();
     if (guided && input) {
       console.log("遊びたい卓について教えてください。途中でやめるには /quit を入力してください。");
-      const answers = await interview(input.readLine, durationOrSeed ? table.minutes : undefined);
+      if (liveDemo) console.log("生成が終わると物語が始まります。会場のみんなで一人の登場人物を動かします。");
+      const answers = await interview(input.readLine, durationOrSeed ? table.minutes : undefined, liveDemo ? "live-demo" : "standard");
       wish = answers.wish;
       table = { ...table, minutes: answers.minutes, scenes: answers.minutes === 30 ? 2 : 4 };
       save(run, "interview.json", answers);
       console.log(`\n${answers.genre}・${answers.minutes}分の卓を生成します。`);
     }
     const freshWish = !file ? wish?.trim() || table.wish : undefined;
-    if (selectedSeat && input) human = terminalSeat(selectedSeat, input);
+    if (selectedSeat && input) human = terminalSeat(selectedSeat, input, process.stdout, liveDemo ? "audience" : "player");
     const call = loggedCall(run,cli(agent, judge, gm, gmModel));
     const { backend, decide } = continuityBackend(call, prior.continuity);
     if (!replaying && file && wish?.trim()) table = {...table,wish};
@@ -346,6 +348,11 @@ async function runTable(wish?: string, file = "", durationOrSeed?: string, conte
       return;
     }
     save(run, "result.json", {status: "ERROR", message: String(error)});
+    if (liveDemo) {
+      console.error("ライブデモが停止しました。進行役は非共有の端末で卓の result.json を確認してください。収録卓は just trpg-demo で開けます。");
+      process.exitCode = 1;
+      return;
+    }
     throw error;
   } finally {
     input?.close();

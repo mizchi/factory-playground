@@ -4,6 +4,7 @@ type Ask = (prompt: string) => Promise<string>;
 
 export type ScenarioRequest = {
   genre: string;
+  pattern?: string;
   activity: string;
   detail: string;
   minutes: Minutes;
@@ -12,6 +13,7 @@ export type ScenarioRequest = {
 
 const genres = ["ミステリ", "脱出ゲーム", "DnD風の冒険", "クトゥルフ的なホラー", "SCP的ホラー", "ダークファンタジー"];
 const activities = ["手がかりをつなぐ", "限られた道具で切り抜ける", "仲間と交渉する", "危険な場所を探索する"];
+const patterns = ["別々の手がかりが、最後にひとつにつながる", "同じ出来事を繰り返し、少しずつ抜け道を見つける", "協力していた二人の目的が途中で食い違う", "何かを救うために、大切なものをひとつ手放す"];
 
 async function choose(ask: Ask, question: string, options: string[], optional = false): Promise<string> {
   const menu = options.map((name, i) => `${i + 1}. ${name}`).join("\n");
@@ -40,12 +42,13 @@ async function askDuration(ask: Ask): Promise<Minutes> {
   }
 }
 
-export async function interview(ask: Ask, fixedMinutes?: Minutes): Promise<ScenarioRequest> {
+export async function interview(ask: Ask, fixedMinutes?: Minutes, mode: "standard" | "live-demo" = "standard"): Promise<ScenarioRequest> {
   const genre = await choose(ask, "どんなジャンルで遊びたいですか？", genres);
+  const pattern = mode === "live-demo" ? await choose(ask, "どんな展開のシナリオが好きですか？", patterns, true) : "";
   const activity = await choose(ask, "卓でやってみたいことは？", activities, true);
   const detail = (await ask("\n登場させたい場所や、やってみたい場面はありますか？\n自由入力（空欄でおまかせ） > ")).trim();
   const minutes = fixedMinutes ?? await askDuration(ask);
-  const wish = [`遊びたいジャンルは「${genre}」。`, activity && `やりたいことは「${activity}」。`, detail]
+  const wish = [`遊びたいジャンルは「${genre}」。`, pattern && `好きな展開は「${pattern}」。`, activity && `やりたいことは「${activity}」。`, detail]
     .filter(Boolean).join("\n");
-  return { genre, activity, detail, minutes, wish };
+  return { genre, ...(pattern && { pattern }), activity, detail, minutes, wish };
 }

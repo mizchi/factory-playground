@@ -7,6 +7,7 @@
 Node.js 24以降とログイン済みの Codex CLI があれば、依存パッケージのインストールは不要。リポジトリのルートで実行する。
 
 ```sh
+just trpg-demo-live          # 好きな展開から新しい卓を生成し、会場で最初の行動を入力
 just trpg                    # 質問に答えて新しいシナリオを作り、自動試遊する
 just trpg '月面図書館の閉館前夜に貸出票の謎を解き、最後に誰に何を貸すか自分たちで決めたい'
 cp templates/trpg/table.json my-table.json

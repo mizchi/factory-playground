@@ -57,3 +57,23 @@ test("quit and incomplete input both stop the interview", async t => {
     await assert.rejects(interview(reader.readLine), PlayInterrupted);
   }
 });
+
+test("live demo includes the chosen plot in the wish and passes the next input to the audience's PC", async t => {
+  const answers = ["1", "2、忘れ物だけが前の周を覚えている", "1", "時計塔", "/hand", "切符の裏を見る。", "満足", "意外", "納得", "切符"];
+  const output = new PassThrough();
+  let screen = "";
+  output.on("data", chunk => { screen += chunk; });
+  const reader = terminalInput(Readable.from([answers.join("\n") + "\n"]), output);
+  t.after(reader.close);
+  const request = await interview(reader.readLine, 30, "live-demo");
+  assert.match(request.wish, /同じ出来事を繰り返し、少しずつ抜け道を見つける、忘れ物だけが前の周を覚えている/);
+  assert.match(screen, /どんな展開のシナリオが好き/);
+  const seat = terminalSeat(1, reader, output, "audience");
+  const view = {draft: 1, seat: 1, turn: 1, title: "時計塔", promise: "", question: "", cast: ["車掌"],
+    handout: {name: "車掌", desire: "秘密の望み", clue: "秘密の証拠", win: "秘密の条件"}, events: [{id: "S0", text: "列車が戻ってきた。"}]};
+  assert.equal((await seat.act(view, [])).action, "切符の裏を見る。");
+  assert.match(screen, /列車が戻ってきた。/);
+  assert.match(screen, /あなたの台詞や行動は？/);
+  assert.match((await seat.survey(view)).victory, /未評価/);
+  assert.doesNotMatch(screen, /秘密の/);
+});

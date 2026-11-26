@@ -79,6 +79,10 @@ trpg wish="" table="" minutes="" context="":
 trpg-demo scene="opening":
     @node templates/trpg/demo.mts {{quote(scene)}}
 
+# 好きな展開を聞いて新しい卓を生成し、その場で会場が席1をプレイ
+trpg-demo-live minutes="30":
+    @node templates/trpg/run.mts --live-demo '' {{quote(minutes)}}
+
 # 一言から新規生成し、自動レビューまで完了した卓の初稿と最終稿を比較
 trpg-quality root="runs":
     @node templates/trpg/report.mts {{quote(root)}}

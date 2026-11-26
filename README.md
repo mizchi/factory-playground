@@ -4,7 +4,7 @@
 
 ## ハッカソン用の雛形
 
-デモは `just trpg-demo` で月面図書館の導入から始まる。参加者に最後の一冊を誰へ貸すか考えてもらい、AIの二人が選んだ結末と比べられる。[登壇・公開の手順](templates/trpg/hackathon.md)
+会場の好みから新しい卓を作って遊ぶには `just trpg-demo-live`。ジャンルと好きな展開を答えると物語が始まり、参加者が最初の行動を入力できる。収録した月面図書館の卓は `just trpg-demo` で再演できる。[登壇・公開の手順](templates/trpg/hackathon.md)
 
 - [汎用ファクトリー](templates/factory/README.md) は、依頼から生成・検査・独立レビュー・改稿までを回す。フォルダー単体で持ち出せる。`just factory-template` で参加案内のサンプルを動かせる。
 - [TRPGの試遊卓](templates/trpg/README.md) は、遊びたい体験からシナリオを作り、30分または60分の卓をGM・NPC・2〜3人のPCで試遊する。PC同士の創発は発言順から追跡でき、GMの整合性は保存したログを `just trpg-audit <draft>` で再評価できる。端末で `just trpg` を実行すると、ジャンルや舞台を質問に沿って選べる。一言で依頼する例は `just trpg '雨宿りした喫茶店で、常連二人の小さな謎を解きたい'`。[試遊記録の見本](templates/trpg/example.md)
