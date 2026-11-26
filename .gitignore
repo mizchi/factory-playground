@@ -7,3 +7,6 @@ node_modules/
 !.env.example
 *.pem
 *.key
+
+# ボードゲーム調査の作業メモと取得物
+/research_notes/対戦ボードゲーム 設計と評価/

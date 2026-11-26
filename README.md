@@ -9,6 +9,10 @@
 - [汎用ファクトリー](templates/factory/README.md) は、依頼から生成・検査・独立レビュー・改稿までを回す。フォルダー単体で持ち出せる。`just factory-template` で参加案内のサンプルを動かせる。
 - [TRPGの試遊卓](templates/trpg/README.md) は、遊びたい体験からシナリオを作り、30分または60分の卓をGM・NPC・2〜3人のPCで試遊する。PC同士の創発は発言順から追跡でき、GMの整合性は保存したログを `just trpg-audit <draft>` で再評価できる。端末で `just trpg` を実行すると、ジャンルや舞台を質問に沿って選べる。一言で依頼する例は `just trpg '雨宿りした喫茶店で、常連二人の小さな謎を解きたい'`。[試遊記録の見本](templates/trpg/example.md)
 
+## 対戦ボードゲーム
+
+`just boardgame '霧の街で通信帯域を奪い合う'` で、お題から複数形式の2人用ゲームを作り、LLM同士で試遊する。`just boardgame-web` で生成稿を開き、人間がCPU、LLM、Jevと対戦できる。[実行と試遊の手順](templates/boardgame/README.md)
+
 ## 自律実装を動かす
 
 **ゴールは、依頼書から実装を作り、反例とセルフレビューの指摘を自分で修正し、受け入れ条件をすべて満たした版を納品すること。** 現在のお題は TypeScript の受注計画 CLI。認証済みの CLI（Codex、Claude Code、Pi のいずれか）、Node.js 24 以降、pnpm、just を使う。
