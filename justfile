@@ -130,3 +130,10 @@ trpg-audit draft:
 # 汎用テンプレート。設定に従い生成・機械検査・独立レビュー・改稿
 factory-template spec="templates/factory/factory.json" task="":
     @node templates/factory/run.mts {{quote(spec)}} {{quote(task)}}
+
+# 自己増殖工場の開拓シミュレーターを起動
+factory-factory:
+    @pnpm --dir prototypes/factory-factory dev
+
+factory-factory-test:
+    @pnpm --dir prototypes/factory-factory test

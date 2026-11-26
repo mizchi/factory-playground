@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101514">
+    <title>Factory Factory — 開拓管制</title>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="masthead">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div><h1>Factory<span>Factory</span></h1><p>自律開拓シミュレーター</p></div>
+        </div>
+        <div class="operation-switch" role="group" aria-label="運転モード">
+          <button type="button" data-operation="placement" aria-pressed="true">班を配置</button>
+          <button type="button" data-operation="automatic" aria-pressed="false">自動運転</button>
+        </div>
+        <div class="mission">
+          <label for="seed">地形シード</label>
+          <input id="seed" type="number" value="7" min="0" max="2147483647" step="1">
+          <button id="reset" type="button">再着陸</button>
+        </div>
+      </header>
+
+      <main class="layout" id="playfield" data-operation="placement">
+        <section class="field" aria-labelledby="field-title">
+          <div id="viewport"></div>
+          <div class="field-heading">
+            <div class="eyebrow"><span class="signal"></span> 地表観測</div>
+            <h2 id="field-title">着陸区域</h2>
+            <div class="map-size">18 × 18 区画</div>
+            <div class="map-event" id="map-event"></div>
+          </div>
+          <div class="map-switch" role="group" aria-label="地表マップの表示">
+            <button type="button" data-map="surface" aria-pressed="true">地表</button>
+            <button type="button" data-map="ore" aria-pressed="false">鉱石</button>
+            <button type="button" data-map="ice" aria-pressed="false">氷</button>
+          </div>
+          <p class="map-error" id="map-error" hidden>3D表示には WebGL 2 が必要です。時間操作と集計は引き続き使えます。</p>
+          <div class="map-help">ドラッグで回転 / スクロールで拡大 / クリックで区画を調査</div>
+          <div class="legend" aria-label="凡例">
+            <span><i class="active-key"></i>稼働</span>
+            <span><i class="build-key"></i>建設中</span>
+            <span><i class="green-key"></i>緑化</span>
+            <span id="crew-key"><i class="crew-key"></i>配置済み班・作業範囲</span>
+          </div>
+        </section>
+
+        <aside class="sidebar" aria-label="開拓管制">
+          <section class="panel placement" id="placement-panel" aria-labelledby="placement-title">
+            <div class="panel-heading">
+              <h2 id="placement-title">作業班を配置</h2>
+              <output id="crew-count" aria-live="polite"></output>
+            </div>
+            <div class="deployment-target">
+              <label for="deployment-factory">配置先</label>
+              <select id="deployment-factory"></select>
+              <span id="power-budget"></span>
+            </div>
+            <p id="local-stock" class="planning-note" title="周辺埋蔵は作業範囲内の鉱石と氷の残量"></p>
+            <div class="job-slots" role="group" aria-label="工場の作業枠">
+              <button type="button" data-job="ore" aria-pressed="false"><span>鉱石採掘</span><small>電力 2</small></button>
+              <button type="button" data-job="ice" aria-pressed="false"><span>採氷</span><small>電力 1</small></button>
+              <button type="button" data-job="build" aria-pressed="false"><span>子工場の建設</span><small>電力 2</small></button>
+              <button type="button" data-job="terraform" aria-pressed="false"><span>緑化</span><small>電力 2</small></button>
+            </div>
+            <p id="placement-note" class="planning-note"></p>
+            <div class="shift-controls">
+              <button type="button" class="run" id="commit-shift" disabled>5日進める</button>
+              <span id="shift-number"></span>
+            </div>
+            <output id="shift-result" class="planning-note" aria-live="polite"></output>
+          </section>
+
+          <section class="panel overview" aria-labelledby="overview-title">
+            <h2 id="overview-title">開拓状況</h2>
+            <p id="objectives" aria-live="polite"></p>
+            <div class="stats">
+              <div><span>稼働工場</span><strong id="active">1</strong></div>
+              <div><span>建設中</span><strong id="building">0</strong></div>
+              <div><span>最深世代</span><strong id="generation">0</strong></div>
+            </div>
+            <div class="progress-label"><span>緑化済み区画</span><strong id="green">0 / 324</strong></div>
+            <progress id="coverage" aria-label="緑化済み区画" max="324" value="0"></progress>
+            <div class="reserves"><span>埋蔵鉱石 <b id="ore"></b></span><span>埋蔵氷 <b id="ice"></b></span></div>
+          </section>
+
+          <section class="panel policies" id="automatic-panel" aria-labelledby="policy-title" hidden>
+            <h2 id="policy-title">工場群の方針</h2>
+            <div class="policy-buttons" role="group" aria-labelledby="policy-title">
+              <button type="button" data-policy="expand" aria-pressed="false">増殖</button>
+              <button type="button" data-policy="balance" aria-pressed="true">両立</button>
+              <button type="button" data-policy="restore" aria-pressed="false">緑化</button>
+            </div>
+            <p id="policy-hint">採掘・建設を進め、余った電力と氷を緑化に使う。</p>
+          </section>
+
+          <section class="panel details" aria-labelledby="details-title">
+            <div class="panel-heading"><h2 id="details-title">区画調査</h2><span id="coordinates"></span></div>
+            <p id="tile-info"></p>
+            <h3 id="factory-title"></h3>
+            <p id="factory-info"></p>
+            <p id="factory-activity"></p>
+          </section>
+
+          <section class="panel log" aria-labelledby="log-title">
+            <h2 id="log-title">建設ログ</h2>
+            <ol id="events"></ol>
+          </section>
+        </aside>
+
+        <div class="transport" aria-label="時間操作">
+          <div class="clock"><span>経過日数</span><output id="day">000</output></div>
+          <p id="deployment-summary"></p>
+          <div class="transport-buttons" id="automatic-controls" hidden>
+            <button type="button" class="run" id="run">▶ 実行</button>
+            <button type="button" id="step">+1 日</button>
+          </div>
+          <div class="speeds" id="speed-controls" role="group" aria-label="進行速度" hidden>
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="4" aria-pressed="false">4×</button>
+            <button type="button" data-speed="16" aria-pressed="false">16×</button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

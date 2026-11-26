@@ -13,6 +13,10 @@
 
 実装とGM台本の比較試遊を紹介する[発表スライド](reports/slides/TRPGファクトリーの作り方.pptx)もある。
 
+## 自己増殖ファクトリー
+
+[Factory Factory](prototypes/factory-factory/README.md) は、現地資源で子工場を増やし、惑星の地表を緑化する Three.js シミュレーター。採掘・増殖・緑化の配分を変え、同じ地形で結果を比べられる。
+
 ## 自律実装を動かす
 
 **ゴールは、依頼書から実装を作り、反例とセルフレビューの指摘を自分で修正し、受け入れ条件をすべて満たした版を納品すること。** 現在のお題は TypeScript の受注計画 CLI。認証済みの CLI（Codex、Claude Code、Pi のいずれか）、Node.js 24 以降、pnpm、just を使う。
