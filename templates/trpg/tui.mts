@@ -1,3 +1,4 @@
+import { seatCriteria, type SeatMetric } from "./seat-review.mts";
 import { terminalInput, type TerminalInput } from "./terminal-input.mts";
 export { PlayInterrupted } from "./terminal-input.mts";
 import type { Readable, Writable } from "node:stream";
@@ -45,6 +46,19 @@ export function terminalSeat(seat:number, input: Readable | TerminalInput = proc
       else if (answer==="/rules") print(v.rules ? ruleSheet(v.rules) : "この卓に追加のルールはありません。");
       else if (answer) return answer;
       else print("一行入力してください。");
+    }
+  }
+
+  async function rate(view:SeatView, cue:string, metric:SeatMetric) {
+    const {question,options} = seatCriteria[metric];
+    const menu = options.map((label,i) => `${i+1}. ${label}`).join("　");
+    for (;;) {
+      const answer = await ask(view, cue+"\n"+question+"\n"+menu+"　0. パス", "番号と、そう思った理由は？");
+      if (answer === "0") return "未回答";
+      const match = /^([1-9])\s+(.+)$/u.exec(answer);
+      const label = match && options[Number(match[1])-1];
+      if (label && match) return `${label}|本人申告|${match[2]}`;
+      print("例「1 相手の提案で手を変えられた」。パスは 0 です。");
     }
   }
 
@@ -96,10 +110,12 @@ export function terminalSeat(seat:number, input: Readable | TerminalInput = proc
       const last=v.events.findLast(e=>e.id.startsWith("S"));
       const outcome=last ? "結末　"+describe(last) : "卓が終わりました。";
       const action=v.events.findLast(e=>e.id.startsWith("A") && e.id.endsWith("."+v.seat));
-      return {satisfaction:await ask(v,outcome,"もう一度遊びたいですか？"),
+      return {satisfaction:await rate(v,outcome,"enjoyment"),
         surprise:await ask(v,outcome,"意外だったことは？"),
-        fairness:await ask(v,outcome,"この結末に納得しましたか？"),
+        fairness:await rate(v,outcome,"credibility"),
         agency:await ask(v,action ? "あなたの最後の行動　"+describe(action) : outcome,"どの選択が効きましたか？"),
+        tension:await rate(v,outcome,"tension"),
+        challenge:await rate(v,action ? "あなたの最後の行動　"+describe(action) : outcome,"gameFeel"),
         victory:viewMode === "audience" ? "会場では個別の勝利条件を伏せたため未評価。" :
           await ask(v,"あなたの目標　"+short(v.handout.win),"勝利条件を達成しましたか？")};
     }

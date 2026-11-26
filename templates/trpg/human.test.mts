@@ -16,7 +16,7 @@ test("one human seat takes both actions, final reply and debrief without receivi
   const table=readTable(join(import.meta.dirname,"table-dungeon.json"));
   const output=new PassThrough(); let screen="";
   output.on("data",d=>{screen+=d.toString()});
-  const answers=["","99","3","自分で逆流を抜ける","1","鐘を止める","音を分けて残そう","満足","驚き","納得","交渉","達成"];
+  const answers=["","99","3","自分で逆流を抜ける","1","鐘を止める","音を分けて残そう","1 満足","驚き","1 納得","交渉","2 退屈","1 工夫できた","達成"];
   const human=terminalSeat(2,Readable.from([answers.join("\n")+"\n"]),output);
   t.after(()=>human.close());
   const roles:string[]=[];
@@ -41,7 +41,7 @@ test("one human seat takes both actions, final reply and debrief without receivi
   assert.deepEqual(read("predictions.json")[1],[null,null]);
   assert.deepEqual(loadBranch(join(run,"draft-1"),2,2,2).point.predictions,[["別席の予想","別席の予想"],[null,null]]);
   assert.deepEqual(read("mechanics.json").state.hp,[2,1]);
-  assert.equal(read("survey.json")[1].satisfaction,"満足");
+  assert.equal(read("survey.json")[1].satisfaction,"楽しかった|本人申告|満足");
   assert.equal(read("survey.json")[1].controller,"human");
 });
 
@@ -58,7 +58,7 @@ test("end of input interrupts the playtest and invalid seats fail explicitly",as
 test("each prompt puts the relevant scene, decision, choice or outcome directly next to the input",async()=>{
   const output=new PassThrough(); let screen="";
   output.on("data",chunk=>{screen+=chunk.toString()});
-  const input=Readable.from(["9\n2\n提案\n賛成\nはい\n驚いた\n納得\n提案\n達成\n"]);
+  const input=Readable.from(["9\n2\n提案\n賛成\n1 面白い\n驚いた\n1 納得\n提案\n1 緊張\n1 工夫\n達成\n"]);
   const ui=terminalSeat(1,input,output);
   const view={draft:1,turn:2,seat:1,title:"港",promise:"約束",question:"問い",cast:["司書","船長"],
     handout:{name:"司書",desire:"望み",clue:"秘密",win:"本を守る"},
@@ -73,7 +73,7 @@ test("each prompt puts the relevant scene, decision, choice or outcome directly 
     assert.equal((screen.match(/2\. 船に乗る\n[^\n]*番号[^\n]*>/g)??[]).length,2);
     assert.match(screen,/選んだ行動　船に乗る\n[^\n]*台詞/);
     assert.match(screen,/船長「本は私に預けて。」\n[^\n]*返/);
-    assert.match(screen,/船が岸に着いた。\n[^\n]*もう一度/);
+    assert.match(screen,/船が岸に着いた。\n[^\n]*楽しかった/);
     assert.doesNotMatch(screen,/予想/);
     assert.match(screen,/本を守る\n[^\n]*勝利条件/);
     assert.doesNotMatch(screen,/長い描写|最後の選択の詳しい説明/);

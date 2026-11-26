@@ -59,7 +59,7 @@ test("quit and incomplete input both stop the interview", async t => {
 });
 
 test("live demo includes the chosen plot in the wish and passes the next input to the audience's PC", async t => {
-  const answers = ["1", "2、忘れ物だけが前の周を覚えている", "1", "時計塔", "/hand", "切符の裏を見る。", "満足", "意外", "納得", "切符"];
+  const answers = ["1", "2、忘れ物だけが前の周を覚えている", "1", "時計塔", "/hand", "切符の裏を見る。", "1 満足", "意外", "1 納得", "切符", "1 緊張", "1 工夫"];
   const output = new PassThrough();
   let screen = "";
   output.on("data", chunk => { screen += chunk; });

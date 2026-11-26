@@ -7,3 +7,6 @@ node_modules/
 !.env.example
 *.pem
 *.key
+
+# シナリオを調査した際の取得物と作業メモ
+/research_notes/公開TRPG シナリオ 資料集/

@@ -79,16 +79,21 @@ test("a READY review with a cited item discrepancy still requires an edit",async
   const table={...readTable(join(import.meta.dirname,"table-dungeon.json")),maxRevisions:0};
   const call:Call=async(role,prompt,keys)=>{
     const fields=Object.fromEntries(keys.map(k=>[k,k]));
+    if(role==="survey")return {...fields,satisfaction:"楽しかった|S1|試せた",fairness:"納得|S1|理由",tension:"ちょうどよい|S1|迷えた",challenge:"手応えあり|S1|工夫"};
     if(role==="author")return {...fields,...params};
     if(role==="player")return {...fields,move:"stay"};
     if(role==="gm")return {...fields,narration:"浮き袋を一つ使った。"};
     if(role==="judge"){
       assert.match(prompt,/use-here/);
-      return {...fields,clarity:"PASS|S0|目的を提示",feasibility:"PASS|S1|帰結を提示",resolutionQuality:"PASS|S2|選択を反映",status:"READY",emergence:"OBSERVED",proposal:"A1.1",response:"A1.2",consequence:"S2",evidenceId:"S2",quote:"浮き袋",stockConflict:"S2"};
+      return {...fields,
+      playExperience:"PASS|共有品を残す手を選んだ",setupEvidence:"S0|opening",choiceEvidence:"A1.1|action",outcomeEvidence:"S2|浮き袋",
+      settingDepth:"PASS|S0|舞台を使用",clarity:"PASS|S0|目的を提示",feasibility:"PASS|S1|帰結を提示",resolutionQuality:"PASS|S2|選択を反映",status:"READY",emergence:"OBSERVED",proposal:"A1.1",response:"A1.2",consequence:"S2",evidenceId:"S2",quote:"浮き袋",stockConflict:"S2"};
     }
     return {...fields,choice:"OK"};
   };
   const result=await playtest(table,run,call);
   assert.equal(result.status,"NEEDS_EDIT");
+  const feedback=JSON.parse(readFileSync(join(run,"draft-1/revision.json"),"utf8"));
+  assert.ok(feedback.failures.some((f:{metric:string})=>f.metric==="stockConflict"));
   assert.equal(JSON.parse(readFileSync(join(run,"draft-1/mechanics.json"),"utf8")).state.stock,1);
 });

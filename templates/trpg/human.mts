@@ -8,7 +8,7 @@ export type SeatView = {
 };
 export type Option = {code:string; label:string};
 export type Action = { action:string; move?:string };
-export type Survey = { satisfaction:string; surprise:string; fairness:string; agency:string; victory:string };
+export type Survey = { satisfaction:string; surprise:string; fairness:string; agency:string; victory:string; tension?:string; challenge?:string };
 export interface HumanSeat {
   seat:number; // 1-based, consistent with handout filenames and public action IDs
   observe?(view:SeatView):void;

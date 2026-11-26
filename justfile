@@ -83,21 +83,45 @@ trpg-demo scene="opening":
 trpg-demo-live minutes="30":
     @node templates/trpg/run.mts --live-demo '' {{quote(minutes)}}
 
+# 同じ港の設定からパターンを一つ選んで生成・試遊・改稿
+trpg-pattern pattern minutes="30" previous="":
+    @node templates/trpg/run.mts --pattern {{quote(pattern)}} {{quote(minutes)}} {{quote(previous)}}
+
+# 5パターンを順番に試遊し、点検項目を次の新作へ引き継ぐ
+trpg-series minutes="30":
+    @node templates/trpg/run.mts --series {{quote(minutes)}}
+
+# 評価基準を変えた後、モデルを呼ばずに保存済みの講評・席の感想を照合する
+trpg-ratings draft:
+    @node templates/trpg/run.mts --ratings {{quote(draft)}}
+
+# 対照例で体験・創発を検査。setting 指定時は設定の適量・不足・過多を検査
+trpg-calibrate suite="experience":
+    @node templates/trpg/calibrate.mts {{quote(suite)}}
+
 # 一言から新規生成し、自動レビューまで完了した卓の初稿と最終稿を比較
 trpg-quality root="runs":
     @node templates/trpg/report.mts {{quote(root)}}
 
 # 人間がPCを1席担当するTUI試遊
-trpg-play seat="1" wish="" table="" minutes="":
-    @TRPG_HUMAN_SEAT={{quote(seat)}} node templates/trpg/run.mts {{quote(wish)}} {{quote(table)}} {{quote(minutes)}}
+trpg-play seat="1" wish="" table="" minutes="" context="":
+    @TRPG_HUMAN_SEAT={{quote(seat)}} node templates/trpg/run.mts {{quote(wish)}} {{quote(table)}} {{quote(minutes)}} {{quote(context)}}
 
 # 同じシナリオと配役で揺らぎカードを替えて試遊
-trpg-replay draft seed="0":
-    @node templates/trpg/run.mts --replay {{quote(draft)}} {{quote(seed)}}
+trpg-replay draft seed="0" context="":
+    @node templates/trpg/run.mts --replay {{quote(draft)}} {{quote(seed)}} {{quote(context)}}
+
+# 生成済みの稿を自動試遊し、根拠のある未達を直して再試遊
+trpg-refine draft revisions="1":
+    @node templates/trpg/run.mts --refine {{quote(draft)}} {{quote(revisions)}}
 
 # 指定した場面のGM裁定直前から新しい卓へ分岐
 trpg-resume draft scene context="":
     @node templates/trpg/run.mts --resume {{quote(draft)}} {{quote(scene)}} {{quote(context)}}
+
+# 同じ場面から分岐した通常GMと演出台本付きGMを匿名で比較
+trpg-gm-review first second:
+    @node templates/trpg/gm-review.mts {{quote(first)}} {{quote(second)}}
 
 # 保存した公開ログを同じ状態のまま整合性監査
 trpg-audit draft:

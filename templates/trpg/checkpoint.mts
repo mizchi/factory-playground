@@ -6,7 +6,7 @@ const sections = ["secret", "clues", "routes", "ending", "npc", "handouts", "bea
 type Section = typeof sections[number];
 export type Context = {
   metadata: Record<string,string>;
-  gm: { sections: Section[]; history: "all" | "scene"; notes: string; metadataKeys: string[] };
+  gm: { direction?: "standard" | "scripted"; sections: Section[]; history: "all" | "scene"; notes: string; metadataKeys: string[] };
 };
 export const defaultContext: Context = { metadata: {}, gm: { sections: [...sections], history: "all", notes: "", metadataKeys: [] } };
 const object = (v: unknown): v is Record<string,unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -18,10 +18,12 @@ export function contextWith(base: Context, patch: unknown): Context {
   const meta = patch.metadata === undefined ? {} : patch.metadata;
   const gm = patch.gm === undefined ? {} : patch.gm;
   if (!object(meta) || !Object.values(meta).every(v => typeof v === "string") ||
-      !object(gm) || Object.keys(gm).some(k => !["sections","history","notes","metadataKeys"].includes(k)))
-    throw new Error("metadata は文字列の辞書、gm は sections / history / notes / metadataKeys です");
+      !object(gm) || Object.keys(gm).some(k => !["sections","history","notes","metadataKeys","direction"].includes(k)))
+    throw new Error("metadata は文字列の辞書、gm は sections / history / notes / metadataKeys / direction です");
   const selected = gm.sections === undefined ? base.gm.sections : gm.sections;
   const history = gm.history === undefined ? base.gm.history : gm.history;
+  const direction = gm.direction === undefined ? base.gm.direction : gm.direction;
+  if (direction !== undefined && direction !== "standard" && direction !== "scripted") throw new Error("gm.direction は standard または scripted です");
   const notes = gm.notes === undefined ? base.gm.notes : gm.notes;
   const metadataKeys = gm.metadataKeys === undefined ? base.gm.metadataKeys : gm.metadataKeys;
   const metadata = {...base.metadata, ...meta} as Record<string,string>;
@@ -31,7 +33,7 @@ export function contextWith(base: Context, patch: unknown): Context {
       (history !== "all" && history !== "scene") || typeof notes !== "string")
     throw new Error("gm の設定が不正です");
   return { metadata,
-    gm: { sections:[...new Set<Section>(selected)], history, notes, metadataKeys:[...metadataKeys] } };
+    gm: { ...(direction && {direction}), sections:[...new Set<Section>(selected)], history, notes, metadataKeys:[...metadataKeys] } };
 }
 
 export function gmView(scenario: Record<string,string>, log: Entry[], turn: number, context: Context) {

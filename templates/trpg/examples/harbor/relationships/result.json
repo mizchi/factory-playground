@@ -1,0 +1,7 @@
+{
+  "status": "NEEDS_EDIT",
+  "draft": 2,
+  "scenario": "draft-2/scenario.md",
+  "complication": "揺らぎカード「選ばなかった手」：先に頼られなかったNPCが、頼ったPCではなく相棒へ手を差し出す。受ければそのNPCは協力するが、元のPCへの公の支持は失われる。断れば、NPCは自分の望みを単独で優先する。",
+  "nextEdit": "draft-2/revision.json"
+}

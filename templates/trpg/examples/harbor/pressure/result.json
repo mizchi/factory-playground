@@ -1,0 +1,7 @@
+{
+  "status": "NEEDS_EDIT",
+  "draft": 2,
+  "scenario": "draft-2/scenario.md",
+  "complication": "揺らぎカード「鎖が噛んだ」：交渉開始時、渡し橋の巻上げ鎖が停止し、選んだNPCが復旧へ呼ばれる。引き留めれば最後の荷車が渡れない。同行すれば訂正札は現場で書く。別のNPCへ替えるなら、その人物の譲歩条件を受け直す。",
+  "nextEdit": "draft-2/revision.json"
+}
