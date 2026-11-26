@@ -1,0 +1,13 @@
+{
+  "name": "factory-boardgame",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node --test boardgame.test.mts"
+  },
+  "devDependencies": {
+    "vite": "^8.0.0"
+  }
+}

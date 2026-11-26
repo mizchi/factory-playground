@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#172b29">
+    <title>ボードゲーム試遊室</title>
+  </head>
+  <body>
+    <main id="app">
+      <header class="header">
+        <div class="identity"><span class="mark" aria-hidden="true">◇</span><span>ボードゲーム試遊室</span></div>
+        <label class="import">ルールJSONを開く<input id="file" type="file" accept="application/json,.json"></label>
+      </header>
+      <nav class="modes" aria-label="遊び方">
+        <button id="mode-single" type="button">単発対戦</button>
+        <button id="mode-circuit" type="button">三卓巡り</button>
+      </nav>
+      <section id="circuit" class="circuit" hidden>
+        <div class="circuit-caption"><h1 id="circuit-title">三卓巡り</h1><p id="circuit-stats"></p></div>
+        <p id="circuit-summary"></p>
+        <div id="circuit-offers" class="circuit-offers"></div>
+        <ol id="circuit-trail" class="circuit-trail" aria-label="これまでの対局"></ol>
+        <button id="circuit-heal" type="button" hidden>3点使ってライフを1回復</button>
+        <button id="circuit-restart" type="button" hidden>新しい巡りを始める</button>
+      </section>
+      <p id="import-error" role="alert" hidden></p>
+      <section class="table-heading" id="table-heading">
+        <nav id="catalog" aria-label="サンプルゲーム"></nav>
+        <div class="introduction"><h1 id="title"></h1><p id="premise"></p></div>
+      </section>
+      <div class="layout" id="table-layout">
+        <section class="board" aria-label="対局">
+          <div class="board-head">
+            <span id="round" class="round"></span>
+            <label class="opponent">対戦相手 <select id="opponent"><option value="cpu">CPU</option><option value="llm">LLM</option><option value="jev">Jev</option></select></label>
+          </div>
+          <ol id="progress" class="progress" aria-label="ラウンド進行"></ol>
+          <p id="circuit-match" class="secret" hidden></p>
+          <div id="score" class="score"></div>
+          <p id="secret" class="secret" hidden></p>
+          <div id="outcome" class="outcome" role="status" aria-live="polite" hidden></div>
+          <section id="decision" class="decision">
+            <h2 id="decision-title"></h2>
+            <p id="decision-text"></p>
+          </section>
+          <div id="turn" class="turn" role="status" aria-live="polite"></div>
+          <div id="board"></div>
+          <p id="schedule" class="schedule" hidden></p>
+          <div id="choices" class="choices"></div>
+          <details id="compare" class="compare">
+            <summary>手を比べる</summary>
+            <dl id="compare-options"></dl>
+          </details>
+          <div id="recovery" class="tools" hidden>
+            <button id="retry" type="button">再試行</button><button id="use-cpu" type="button">CPUで続ける</button>
+          </div>
+          <div id="feedback" class="feedback" hidden>
+            <label>相手を見て変えた手は？ <textarea id="notes" rows="2" placeholder="例：相手が外洋を続けて選んだので、先に押さえた"></textarea></label>
+            <button id="save" type="button">試遊ログを保存</button>
+          </div>
+          <div id="circuit-next-row" class="tools" hidden><button id="circuit-next" type="button">次の3卓へ</button></div>
+          <div id="single-tools" class="tools">
+            <button id="reset" type="button">同じ条件で再戦</button>
+            <button id="new" type="button">新しい条件で対戦</button>
+          </div>
+        </section>
+        <aside class="side" aria-label="ルールと対局ログ">
+          <section><h2>ルール</h2><ul id="rules"></ul></section>
+          <section><h2>対局ログ</h2><ol id="history"></ol></section>
+        </aside>
+      </div>
+    </main>
+    <script type="module" src="/web/main.mts"></script>
+  </body>
+</html>

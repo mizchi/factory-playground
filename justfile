@@ -131,6 +131,17 @@ trpg-audit draft:
 factory-template spec="templates/factory/factory.json" task="":
     @node templates/factory/run.mts {{quote(spec)}} {{quote(task)}}
 
+# お題から対戦ゲームを生成し、LLM同士の試遊・判定・改稿を回す
+boardgame brief pattern="all" attempts="2" seed="23":
+    @node templates/boardgame/run.mts {{quote(brief)}} {{quote(pattern)}} {{quote(attempts)}} {{quote(seed)}}
+
+# サンプルまたは生成した rules.json をViteで試遊
+boardgame-web:
+    @pnpm --dir templates/boardgame dev
+
+boardgame-test:
+    @pnpm --dir templates/boardgame test
+
 # 自己増殖工場の開拓シミュレーターを起動
 factory-factory:
     @pnpm --dir prototypes/factory-factory dev
